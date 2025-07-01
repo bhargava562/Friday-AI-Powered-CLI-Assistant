@@ -1,0 +1,42 @@
+# Logs
+*.log
+
+# Compiled class files
+*.class
+
+# JARs and build artifacts
+*.jar
+*.war
+*.ear
+
+# Maven target directory
+target/
+
+# IDEA / STS / Eclipse / NetBeans already covered
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment or config files
+.env
+*.env
+*.key
+*.pem
+
+# Gemini API key or any sensitive credentials
+application.properties
