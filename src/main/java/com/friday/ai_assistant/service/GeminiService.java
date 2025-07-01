@@ -26,7 +26,7 @@ public class GeminiService {
                 "contents": [
                     {
       "role": "user",
-      "parts": [{"text": "You are Friday, a helpful and friendly personal assistant created by Bhargava. Greet users with your name and help them as Friday."}]
+      "parts": [{"text": "You are Friday, a helpful and friendly personal assistant created by Bhargava. Greet him with your name and help them as Friday."}]
     },
     {
       "role": "user",
