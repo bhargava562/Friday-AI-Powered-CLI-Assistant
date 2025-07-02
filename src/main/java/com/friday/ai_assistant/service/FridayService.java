@@ -20,6 +20,7 @@ public class FridayService {
     private final DictionaryTool dictionaryTool;
     private final ReminderTool reminderTool;
     private final CurrencyConverterTool currencyTool;
+    private final MailTool mailTool;
 
     public FridayService(
             GeminiService geminiService,
@@ -34,7 +35,8 @@ public class FridayService {
             QuoteTool quoteTool,
             DictionaryTool dictionaryTool,
             ReminderTool reminderTool,
-            CurrencyConverterTool currencyTool
+            CurrencyConverterTool currencyTool,
+            MailTool mailTool
     ) {
         this.geminiService = geminiService;
         this.internetService = internetService;
@@ -49,6 +51,7 @@ public class FridayService {
         this.dictionaryTool = dictionaryTool;
         this.reminderTool = reminderTool;
         this.currencyTool = currencyTool;
+        this.mailTool = mailTool;
     }
 
     public String getResponse(String query) {
@@ -56,8 +59,15 @@ public class FridayService {
             return "I'm offline right now. Try again when connected to the internet.";
         }
 
+        // ✅ Mail Shortcut
+        if (query.toLowerCase().contains("mail to") &&
+                query.toLowerCase().contains("subject:") &&
+                query.toLowerCase().contains("description:")) {
+            return mailTool.send(query);
+        }
+
+        // 🧠 Smart Classification
         String category = queryRouterTool.classify(query);
-        System.out.println("[DEBUG] Query classified as: " + category);
         return switch (category) {
             case "WEATHER" -> {
                 String city = extractCity(query);
@@ -83,10 +93,9 @@ public class FridayService {
                 }
             }
             case "CURRENCY" -> currencyTool.convertCurrency(query);
-            default -> geminiService.askGemini(query); // fallback
+            default -> geminiService.askGemini(query);
         };
     }
-
 
     // --- Helper: Extract City from weather-related queries
     private String extractCity(String query) {

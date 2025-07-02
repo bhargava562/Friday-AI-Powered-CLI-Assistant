@@ -4,59 +4,66 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.friday.ai_assistant.model.Reminder;
 
-import java.awt.*;
 import java.io.File;
 import java.time.LocalTime;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ReminderRunner {
 
-    public static void main(String[] args) throws Exception {
-        File jsonFile = new File("reminders.json");
-        ObjectMapper mapper = new ObjectMapper();
+    private static final File jsonFile = new File("D:/FRIDAY/ai-assistant/target/temp/reminders.json");
+    private static final ObjectMapper mapper = new ObjectMapper();
 
-        if (!jsonFile.exists()) return;
+    public static void main(String[] args) {
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+            try {
+                List<Reminder> reminders = loadReminders();
+                LocalTime now = LocalTime.now().withSecond(0).withNano(0);
+                LocalTime oneMinuteAgo = now.minusMinutes(1);
 
-        List<Reminder> reminders = mapper.readValue(jsonFile, new TypeReference<>() {});
-        LocalTime now = LocalTime.now().withSecond(0).withNano(0);
-        boolean changed = false;
+                reminders.removeIf(r -> {
+                    try {
+                        LocalTime reminderTime = LocalTime.parse(r.getTime());
+                        if (!reminderTime.isAfter(now) && !reminderTime.isBefore(oneMinuteAgo)) {
+                            notify(r.getMessage());
+                            return !r.isDaily(); // remove only if not daily
+                        }
+                    } catch (Exception ignored) {}
+                    return false;
+                });
 
-        Iterator<Reminder> iterator = reminders.iterator();
-        while (iterator.hasNext()) {
-            Reminder reminder = iterator.next();
-            LocalTime reminderTime = LocalTime.parse(reminder.getTime());
+                saveReminders(reminders);
+            } catch (Exception ignored) {}
+        }, 0, 1, TimeUnit.MINUTES);
+    }
 
-            if (reminderTime.equals(now)) {
-                showNotification(reminder.getMessage());
+    private static void notify(String message) {
+        try {
+            String command = String.format(
+                    "powershell -ExecutionPolicy Bypass -Command \"New-BurntToastNotification -Text 'Friday Reminder', '%s'\"",
+                    message.replace("\"", "'")
+            );
+            Runtime.getRuntime().exec(command);
+        } catch (Exception ignored) {}
+    }
 
-                if (!reminder.isDaily()) {
-                    iterator.remove();
-                    changed = true;
-                }
+    private static List<Reminder> loadReminders() {
+        try {
+            if (!jsonFile.exists() || jsonFile.length() == 0) {
+                return new CopyOnWriteArrayList<>();
             }
-        }
-
-        if (changed) {
-            mapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, reminders);
+            List<Reminder> loaded = mapper.readValue(jsonFile, new TypeReference<>() {});
+            return new CopyOnWriteArrayList<>(loaded);
+        } catch (Exception ignored) {
+            return new CopyOnWriteArrayList<>();
         }
     }
 
-    private static void showNotification(String message) {
+    private static void saveReminders(List<Reminder> reminders) {
         try {
-            if (SystemTray.isSupported()) {
-                SystemTray tray = SystemTray.getSystemTray();
-                Image image = Toolkit.getDefaultToolkit().createImage("icon.png");
-                TrayIcon trayIcon = new TrayIcon(image, "Friday");
-                trayIcon.setImageAutoSize(true);
-                tray.add(trayIcon);
-                trayIcon.displayMessage("Friday Reminder", message, TrayIcon.MessageType.INFO);
-            } else {
-                String ps = String.format("powershell -Command \"New-BurntToastNotification -Text 'Friday Reminder', '%s'\"", message);
-                Runtime.getRuntime().exec(ps);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            mapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, reminders);
+        } catch (Exception ignored) {}
     }
 }
