@@ -21,6 +21,7 @@ public class FridayService {
     private final ReminderTool reminderTool;
     private final CurrencyConverterTool currencyTool;
     private final MailTool mailTool;
+    private final AchievementTracker achievementTracker;
 
     public FridayService(
             GeminiService geminiService,
@@ -36,7 +37,8 @@ public class FridayService {
             DictionaryTool dictionaryTool,
             ReminderTool reminderTool,
             CurrencyConverterTool currencyTool,
-            MailTool mailTool
+            MailTool mailTool,
+            AchievementTracker achievementTracker
     ) {
         this.geminiService = geminiService;
         this.internetService = internetService;
@@ -52,11 +54,18 @@ public class FridayService {
         this.reminderTool = reminderTool;
         this.currencyTool = currencyTool;
         this.mailTool = mailTool;
+        this.achievementTracker =  achievementTracker;
     }
 
     public String getResponse(String query) {
         if (!internetService.isInternetAvailable()) {
             return "I'm offline right now. Try again when connected to the internet.";
+        }
+
+        if (query.equalsIgnoreCase("thanos")) return achievementTracker.showGauntlet();
+        if (query.equalsIgnoreCase("thanos snap")) return achievementTracker.snap();
+        if (query.toLowerCase().startsWith("collect ")) {
+            return achievementTracker.collectStone(query.substring(8).trim());
         }
 
         // ✅ Mail Shortcut
