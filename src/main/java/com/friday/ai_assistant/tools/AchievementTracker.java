@@ -34,10 +34,13 @@ public class AchievementTracker {
     // Stone coordinate ranges - all coordinates where stones should be colored
     private final Map<InfinityStone, List<int[]>> stoneCoordinateRanges = Map.of(
             InfinityStone.SOUL, Arrays.asList(
-                    new int[]{25, 14, 16}, // Single coordinate: y:25, x:14-16
-                    new int[]{26, 12, 18}, // Range: y:26, x:12 to 18
-                    new int[]{27, 12, 18}, // Range: y:27, x:12 to 18
-                    new int[]{28, 13, 17}  // Range: y:28, x:13 to 17
+                    new int[]{25, 13, 17}, // Y:25, X:13-17
+                    new int[]{25, 14, 16}, // Y:25, X:14-16 (existing)
+                    new int[]{26, 12, 18}, // Y:26, X:12-18 (existing)
+                    new int[]{27, 12, 18}, // Y:27, X:12-18 (existing)
+                    new int[]{28, 12, 18}, // Y:28, X:12-18 (updated)
+                    new int[]{28, 13, 17}, // Y:28, X:13-17 (existing)
+                    new int[]{29, 14, 16}  // Y:29, X:14-16 (new)
             ),
             InfinityStone.REALITY, Arrays.asList(
                     new int[]{26, 22, 28}, // Range: y:26, x:22 to 28
@@ -47,19 +50,23 @@ public class AchievementTracker {
                     new int[]{29, 23, 27}  // Range: y:29, x:23 to 27 (decreased by 1)
             ),
             InfinityStone.SPACE, Arrays.asList(
-                    new int[]{26, 34, 39}, // Range: y:26, x:34 to 39
-                    new int[]{27, 33, 39}, // Range: y:27, x:33 to 39
-                    new int[]{28, 34, 38}  // Range: y:28, x:34 to 38 (decreased by 1)
+                    new int[]{25, 35, 39}, // Y:25, X:35-39 (increased start by 1)
+                    new int[]{26, 34, 40}, // Y:26, X:34-40 (increased end by 1)
+                    new int[]{27, 33, 40}, // Y:27, X:33-40 (increased end by 1)
+                    new int[]{28, 34, 40}, // Y:28, X:34-40 (increased end by 2)
+                    new int[]{29, 35, 38}  // Y:29, X:35-38 (new)
             ),
             InfinityStone.POWER, Arrays.asList(
-                    new int[]{26, 46, 49}, // Range: y:26, x:46 to 49
-                    new int[]{27, 46, 49}, // Range: y:27, x:46 to 49
-                    new int[]{28, 47, 47}  // Single coordinate: y:28, x:47
+                    new int[]{25, 46, 49}, // Y:25, X:46-49 (increased start and end by 1)
+                    new int[]{26, 45, 50}, // Y:26, X:45-50 (decreased start by 1, increased end by 1)
+                    new int[]{27, 44, 51}, // Y:27, X:44-51 (decreased start by 2, increased end by 2)
+                    new int[]{28, 44, 50}, // Y:28, X:44-50 (increased start and end by 1)
+                    new int[]{29, 45, 49}  // Y:29, X:45-49 (increased end by 1)
             ),
             InfinityStone.TIME, Arrays.asList(
                     new int[]{35, 60, 65}, // Range: y:35, x:60 to 65
-                    new int[]{36, 59, 63}, // Range: y:36, x:59 to 63
-                    new int[]{37, 59, 61}, // Range: y:37, x:59 to 61
+                    new int[]{36, 59, 65}, // Range: y:36, x:59 to 65 (increased end by 2)
+                    new int[]{37, 59, 64}, // Range: y:37, x:59 to 64 (increased end by 3)
                     new int[]{34, 60, 65}, // Range: y:34, x:60 to 65 (decreased by 1)
                     new int[]{38, 58, 62}  // Range: y:38, x:58 to 62 (decreased by 1)
             ),
