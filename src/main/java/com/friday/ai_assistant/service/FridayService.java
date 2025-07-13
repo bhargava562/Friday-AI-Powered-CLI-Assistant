@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FridayService {
-
     private final GeminiService geminiService;
     private final InternetService internetService;
     private final QueryRouterTool queryRouterTool;
@@ -22,6 +21,7 @@ public class FridayService {
     private final CurrencyConverterTool currencyTool;
     private final MailTool mailTool;
     private final AchievementTracker achievementTracker;
+    private final GoogleCalendarService calendarService;
 
     public FridayService(
             GeminiService geminiService,
@@ -38,8 +38,9 @@ public class FridayService {
             ReminderTool reminderTool,
             CurrencyConverterTool currencyTool,
             MailTool mailTool,
-            AchievementTracker achievementTracker
-    ) {
+            AchievementTracker achievementTracker,
+            GoogleCalendarService calendarService
+            ) {
         this.geminiService = geminiService;
         this.internetService = internetService;
         this.queryRouterTool = queryRouterTool;
@@ -55,8 +56,47 @@ public class FridayService {
         this.currencyTool = currencyTool;
         this.mailTool = mailTool;
         this.achievementTracker =  achievementTracker;
+        this.calendarService = calendarService;
     }
+    private String extractBetween(String input, String start, String endRegex) {
+        return input.replaceAll(".*?" + start, "").replaceAll(endRegex + ".*", "").trim();
+    }
+    public String handleCalendarQuery(String query) {
+        query = query.toLowerCase().trim();
 
+        // --- LIST EVENTS
+        if (query.contains("show") || query.contains("list") || query.contains("upcoming")) {
+            return calendarService.listEvents();
+        }
+
+        // --- DELETE EVENT
+        if (query.contains("delete") || query.contains("remove") || query.contains("cancel")) {
+            // Extract event title
+            String title = query.replaceAll(".*(delete|remove|cancel)\\s+(event)?", "").trim().replace("\"", "");
+            return calendarService.deleteEvent(title);
+        }
+
+        // --- ADD EVENT
+        if (query.contains("add") || query.contains("create") || query.contains("schedule")) {
+            // Example: add event "Doctor Appointment" on 25 July 2025 at 5pm
+            String summaryRegex = "\"([^\"]+)\"";
+            String[] parts = query.split("on|at|after", 2);
+            String summary = "Untitled Event";
+            String time = "tomorrow";
+
+            if (query.matches(".*\"[^\"]+\".*")) {
+                summary = query.replaceAll(".*\"([^\"]+)\".*", "$1");
+            }
+
+            if (parts.length > 1) {
+                time = parts[1].replaceAll("\"", "").trim();
+            }
+
+            return calendarService.addEvent(summary, time);
+        }
+
+        return "❓ Unrecognized event command. Try: add, delete, list calendar events.";
+    }
     public String getResponse(String query) {
         if (!internetService.isInternetAvailable()) {
             return "I'm offline right now. Try again when connected to the internet.";
@@ -82,6 +122,7 @@ public class FridayService {
                 String city = extractCity(query);
                 yield weatherTool.getWeather(city);
             }
+            case "EVENT" -> handleCalendarQuery(query);
             case "TIME" -> timeTool.getCurrentTime();
             case "NEWS" -> newsTool.getTopHeadlines();
             case "JOKE" -> jokeTool.getRandomJoke();

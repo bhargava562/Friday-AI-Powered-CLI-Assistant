@@ -13,10 +13,9 @@ public class QueryRouterTool {
     }
 
     public String classify(String userQuery) {
-        // 🌐 Step 1: Ask Gemini
         String prompt = """
                 Classify the following user query into one of these categories:
-                WEATHER, TIME, NEWS, JOKE, STOCK, KNOWLEDGE, QUOTE, DICTIONARY, REMINDER, CURRENCY
+                WEATHER, TIME, NEWS, JOKE, STOCK, KNOWLEDGE, QUOTE, DICTIONARY, REMINDER, CURRENCY, EVENT
 
                 Just reply with the category name. Do not explain anything.
 
@@ -26,16 +25,13 @@ public class QueryRouterTool {
 
         String response = geminiService.askGemini(prompt).trim().toUpperCase();
 
-        // 🧠 Step 2: Accept if valid
         for (String valid : VALID_CATEGORIES) {
             if (response.contains(valid)) {
                 return valid;
             }
         }
 
-        // 🔁 Step 3: NLP fallback if Gemini fails
-        String fallback = keywordFallback(userQuery);
-        return fallback;
+        return keywordFallback(userQuery);
     }
 
     private String keywordFallback(String query) {
@@ -48,7 +44,8 @@ public class QueryRouterTool {
         if (query.matches(".*\\b(stock|price of|share)\\b.*")) return "STOCK";
         if (query.matches(".*\\b(quote|motivation|inspiration)\\b.*")) return "QUOTE";
         if (query.matches(".*\\b(dictionary|define|meaning of)\\b.*")) return "DICTIONARY";
-        if (query.matches(".*\\b(remind|reminder|alert|reminders|tasks|task)\\b.*")) return "REMINDER";
+        if (query.matches(".*\\b(remind|reminder|alert|task|notify me)\\b.*")) return "REMINDER";
+        if (query.matches(".*\\b(event|calendar|schedule|meeting|appointment|conference|vacation)\\b.*")) return "EVENT";
         if (query.matches(".*\\b(convert|rupee|dollar|euro|inr|usd|currency)\\b.*")) return "CURRENCY";
         if (query.matches(".*\\b(who|what|when|where|why|how|explain)\\b.*")) return "KNOWLEDGE";
 
@@ -57,6 +54,6 @@ public class QueryRouterTool {
 
     private static final String[] VALID_CATEGORIES = {
             "WEATHER", "TIME", "NEWS", "JOKE", "STOCK",
-            "KNOWLEDGE", "QUOTE", "DICTIONARY", "REMINDER", "CURRENCY"
+            "KNOWLEDGE", "QUOTE", "DICTIONARY", "REMINDER", "CURRENCY", "EVENT"
     };
 }

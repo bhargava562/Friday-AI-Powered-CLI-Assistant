@@ -40,3 +40,7 @@ Thumbs.db
 
 # Gemini API key or any sensitive credentials
 application.properties
+
+# Google OAuth sensitive files
+src/main/resources/credentials.json
+tokens/
