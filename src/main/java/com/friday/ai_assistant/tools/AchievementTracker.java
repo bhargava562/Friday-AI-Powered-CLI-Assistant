@@ -15,7 +15,7 @@ public class AchievementTracker {
 
     private final Set<InfinityStone> collected = EnumSet.noneOf(InfinityStone.class);
     private final String SAVE_FILE = "infinity_stones_progress.txt";
-    private final String GAUNTLET_FILE = "src/main/resources/thanos.txt";
+    private final String GAUNTLET_RESOURCE = "/thanos.txt";
 
     // ANSI colors for stones
     private final Map<InfinityStone, String> stoneColors = Map.of(
@@ -219,59 +219,60 @@ public class AchievementTracker {
     }
 
     public String showGauntlet() {
-        try {
-            List<String> lines = Files.readAllLines(Paths.get(GAUNTLET_FILE));
-            StringBuilder result = new StringBuilder();
-
-            // Process each line
-            for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
-                String line = lines.get(lineIndex);
-                StringBuilder coloredLine = new StringBuilder();
-
-                // Process each character in the line
-                for (int charIndex = 0; charIndex < line.length(); charIndex++) {
-                    char currentChar = line.charAt(charIndex);
-
-                    // Check if this position should be colored as a stone
-                    InfinityStone stoneAtPosition = getStoneAtPosition(lineIndex, charIndex);
-
-                    if (stoneAtPosition != null) {
-                        // Color this position as a stone with block character
-                        String stoneColor = stoneColors.get(stoneAtPosition);
-                        coloredLine.append(stoneColor).append("█").append(RESET_COLOR);
-                    } else if (currentChar != ' ') {
-                        // Color as gauntlet (non-space characters)
-                        coloredLine.append(GAUNTLET_COLOR).append(currentChar).append(RESET_COLOR);
-                    } else {
-                        // Keep spaces as they are
-                        coloredLine.append(currentChar);
-                    }
-                }
-
-                result.append(coloredLine).append("\n");
-            }
-
-            // Add status information
-            result.append("\n").append(GAUNTLET_COLOR).append("🥊 INFINITY GAUNTLET").append(RESET_COLOR).append("\n");
-            result.append("💾 Stones Collected: ").append(collected.size()).append("/6 (Saved Permanently)\n");
-
-            if (!collected.isEmpty()) {
-                result.append("Collected: ");
-                for (InfinityStone stone : collected) {
-                    result.append(stoneColors.get(stone)).append("█").append(stone.name()).append(RESET_COLOR).append(" ");
-                }
-                result.append("\n");
-            }
-
-            if (collected.size() == 6) {
-                result.append("\n🔥 ALL STONES COLLECTED! You can now SNAP! 🔥\n");
-            }
-
-            return result.toString();
-        } catch (IOException e) {
-            return "⚠️ Failed to load gauntlet: " + e.getMessage() +
-                    "\nMake sure " + GAUNTLET_FILE + " exists!";
+        InputStream inputStream = getClass().getResourceAsStream(GAUNTLET_RESOURCE);
+        if (inputStream == null) {
+            return "⚠️ Failed to load gauntlet: thanos.txt not found in resources.\nMake sure it's inside src/main/resources!";
         }
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        List<String> lines = reader.lines().collect(Collectors.toList());
+
+        StringBuilder result = new StringBuilder();
+
+        // Process each line
+        for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
+            String line = lines.get(lineIndex);
+            StringBuilder coloredLine = new StringBuilder();
+
+            // Process each character in the line
+            for (int charIndex = 0; charIndex < line.length(); charIndex++) {
+                char currentChar = line.charAt(charIndex);
+
+                // Check if this position should be colored as a stone
+                InfinityStone stoneAtPosition = getStoneAtPosition(lineIndex, charIndex);
+
+                if (stoneAtPosition != null) {
+                    // Color this position as a stone with block character
+                    String stoneColor = stoneColors.get(stoneAtPosition);
+                    coloredLine.append(stoneColor).append("█").append(RESET_COLOR);
+                } else if (currentChar != ' ') {
+                    // Color as gauntlet (non-space characters)
+                    coloredLine.append(GAUNTLET_COLOR).append(currentChar).append(RESET_COLOR);
+                } else {
+                    // Keep spaces as they are
+                    coloredLine.append(currentChar);
+                }
+            }
+
+            result.append(coloredLine).append("\n");
+        }
+
+        // Add status information
+        result.append("\n").append(GAUNTLET_COLOR).append("🥊 INFINITY GAUNTLET").append(RESET_COLOR).append("\n");
+        result.append("💾 Stones Collected: ").append(collected.size()).append("/6 (Saved Permanently)\n");
+
+        if (!collected.isEmpty()) {
+            result.append("Collected: ");
+            for (InfinityStone stone : collected) {
+                result.append(stoneColors.get(stone)).append("█").append(stone.name()).append(RESET_COLOR).append(" ");
+            }
+            result.append("\n");
+        }
+
+        if (collected.size() == 6) {
+            result.append("\n🔥 ALL STONES COLLECTED! You can now SNAP! 🔥\n");
+        }
+
+        return result.toString();
     }
 
     public String snap() {
